@@ -16,17 +16,41 @@
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
     <h1>Web Socket Server</h1>
+    <div id="chatlog">
+    </div>
+    <input id="message" type="text">
+    <button>Submit</button>
+
     <script>
-      var ws = new WebSocket('ws://localhost:40510');
+      const ws = new WebSocket('ws://localhost:40510', 'echo-protocol');
+      const button = document.querySelector('button');
+      const chatbox = document.getElementById('chatlog');
+      const message = document.getElementById('message');
+
+      button.addEventListener('click', sendMessage);
+
       // event emmited when connected
-      ws.onopen = function () {
-          console.log('websocket is connected ...')
-          // sending a send event to websocket server
-          ws.send('connected')
+      ws.onopen = () => {
+        console.log('websocket is connected ...')
+        // sending a send event to websocket server
+        const connected = { msg: 'connected', isUser: false };
+        ws.send(JSON.stringify(connected));
       }
       // event emmited when receiving message 
-      ws.onmessage = function (ev) {
-          console.log(ev);
+      ws.onmessage = (ev) => {
+        const msg = ev.data;
+        chatbox.innerHTML += `<br> <p>${msg}</p>`;
+      }
+
+      ws.onclose = (n) => console.log('Connection has been closed.')
+
+      function sendMessage(){
+        const chat = {
+          msg: message.value,
+          isUser: true
+        };
+        ws.send(JSON.stringify(chat));
+        message.value = '';
       }
     </script>
   </body>
